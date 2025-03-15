@@ -1,9 +1,10 @@
 
-import { Home, Users, Wallet, ChartBar, Settings, LogOut } from "lucide-react";
+import { Home, Users, Wallet, ChartBar, Settings, LogOut, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { icon: Home, label: "Dashboard", href: "/" },
+  { icon: FileText, label: "Transactions", href: "/transactions" },
+  { icon: Home, label: "Dashboard", href: "/dashboard" },
   { icon: Users, label: "Members", href: "/members" },
   { icon: Wallet, label: "Loans", href: "/loans" },
   { icon: ChartBar, label: "Reports", href: "/reports" },
