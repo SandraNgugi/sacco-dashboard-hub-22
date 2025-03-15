@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { Search, Filter, Calendar, Download } from "lucide-react";
+import { Search, Filter, Calendar, Download, Upload, SendHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,6 +10,8 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { SendMoneyDialog } from "@/components/transactions/SendMoneyDialog";
+import { DepositMoneyDialog } from "@/components/transactions/DepositMoneyDialog";
 
 // Sample transaction data for demonstration
 const transactions = [
@@ -125,6 +127,8 @@ const getTransactionTypeDetails = (type: string) => {
 
 const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSendMoneyOpen, setIsSendMoneyOpen] = useState(false);
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
   
   // Filter transactions based on search term
   const filteredTransactions = transactions.filter(transaction => 
@@ -159,6 +163,22 @@ const Transactions = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <Button 
+                variant="default" 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => setIsDepositOpen(true)}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Deposit Money
+              </Button>
+              <Button 
+                variant="default"
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => setIsSendMoneyOpen(true)}
+              >
+                <SendHorizontal className="w-4 h-4 mr-2" />
+                Send Money
+              </Button>
               <Button variant="outline" className="border-sacco-200 text-sacco-700">
                 <Calendar className="w-4 h-4 mr-2" />
                 Filter by Date
@@ -291,6 +311,17 @@ const Transactions = () => {
           </div>
         </div>
       </main>
+      
+      {/* Dialogs */}
+      <SendMoneyDialog 
+        isOpen={isSendMoneyOpen} 
+        onClose={() => setIsSendMoneyOpen(false)} 
+      />
+      
+      <DepositMoneyDialog 
+        isOpen={isDepositOpen} 
+        onClose={() => setIsDepositOpen(false)} 
+      />
     </div>
   );
 };
