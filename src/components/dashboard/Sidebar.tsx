@@ -1,8 +1,9 @@
 
-import { Wallet, Settings, LogOut, FileText } from "lucide-react";
+import { Home, Wallet, Settings, LogOut, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
+  { icon: Home, label: "Dashboard", href: "/dashboard" },
   { icon: FileText, label: "Transactions", href: "/transactions" },
   { icon: Wallet, label: "Loans", href: "/loans" },
   { icon: Settings, label: "Settings", href: "/settings" },
