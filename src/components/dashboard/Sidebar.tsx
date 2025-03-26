@@ -12,7 +12,7 @@ export function Sidebar() {
   return (
     <aside className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col animate-slide-in">
       <div className="p-6 border-b border-gray-200">
-        <h2 className="text-2xl font-semibold text-sacco-900">Member Portal</h2>
+        <h2 className="text-2xl font-semibold text-sacco-900">Times U Sacco</h2>
       </div>
       
       <nav className="flex-1 p-4">
