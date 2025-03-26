@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Search, Filter, Calendar, Download, Upload, SendHorizontal } from "lucide-react";
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { SendMoneyDialog } from "@/components/transactions/SendMoneyDialog";
 import { DepositMoneyDialog } from "@/components/transactions/DepositMoneyDialog";
+import { WithdrawMoneyDialog } from "@/components/transactions/WithdrawMoneyDialog";
 
 // Sample transaction data for demonstration
 const transactions = [
@@ -129,6 +129,7 @@ const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSendMoneyOpen, setIsSendMoneyOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   
   // Filter transactions based on search term
   const filteredTransactions = transactions.filter(transaction => 
@@ -178,6 +179,14 @@ const Transactions = () => {
               >
                 <SendHorizontal className="w-4 h-4 mr-2" />
                 Send Money
+              </Button>
+              <Button 
+                variant="default"
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => setIsWithdrawOpen(true)}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Withdraw Money
               </Button>
               <Button variant="outline" className="border-sacco-200 text-sacco-700">
                 <Calendar className="w-4 h-4 mr-2" />
@@ -321,6 +330,11 @@ const Transactions = () => {
       <DepositMoneyDialog 
         isOpen={isDepositOpen} 
         onClose={() => setIsDepositOpen(false)} 
+      />
+      
+      <WithdrawMoneyDialog 
+        isOpen={isWithdrawOpen} 
+        onClose={() => setIsWithdrawOpen(false)} 
       />
     </div>
   );
