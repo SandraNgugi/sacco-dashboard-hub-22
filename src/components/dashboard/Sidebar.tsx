@@ -1,5 +1,5 @@
 
-import { Wallet, Settings, LogOut, FileText, Shield, User } from "lucide-react";
+import { Wallet, Settings, LogOut, FileText, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SaccoLogo } from "./SaccoLogo";
 
@@ -33,10 +33,6 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center w-full p-3 text-sacco-600 rounded-lg mb-3 bg-sacco-50">
-          <User className="w-5 h-5 mr-3 text-sacco-700" />
-          <span className="font-medium">Sandra</span>
-        </div>
         <a href="/admin" className="flex items-center w-full p-3 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors mb-2">
           <Shield className="w-5 h-5 mr-3" />
           <span className="font-medium">Admin Panel</span>

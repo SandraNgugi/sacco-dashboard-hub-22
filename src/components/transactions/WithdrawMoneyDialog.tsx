@@ -35,6 +35,9 @@ const formSchema = z.object({
     message: "Account number must be at least 5 characters.",
   }),
   description: z.string().optional(),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }).optional(),
 });
 
 type WithdrawFormValues = z.infer<typeof formSchema>;
@@ -51,9 +54,10 @@ export function WithdrawMoneyDialog({ isOpen, onClose }: WithdrawMoneyDialogProp
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: "",
-      withdrawalMethod: "",
+      withdrawalMethod: "Bank Transfer",
       accountNumber: "",
       description: "",
+      email: "",
     },
   });
 
@@ -68,8 +72,8 @@ export function WithdrawMoneyDialog({ isOpen, onClose }: WithdrawMoneyDialogProp
       console.log("Withdraw form values:", values);
       
       // Show success toast
-      toast.success("Withdrawal successful", {
-        description: `KES ${values.amount} has been withdrawn from your account.`,
+      toast.success("Withdrawal request submitted", {
+        description: `KES ${values.amount} will be sent to your account soon.`,
       });
       
       // Reset form and close dialog
@@ -115,6 +119,23 @@ export function WithdrawMoneyDialog({ isOpen, onClose }: WithdrawMoneyDialogProp
             
             <FormField
               control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="your@email.com" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Required for withdrawal confirmation
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
               name="withdrawalMethod"
               render={({ field }) => (
                 <FormItem>
@@ -122,7 +143,7 @@ export function WithdrawMoneyDialog({ isOpen, onClose }: WithdrawMoneyDialogProp
                   <FormControl>
                     <div className="relative">
                       <CreditCard className="absolute left-3 top-3 h-4 w-4 text-sacco-500" />
-                      <Input className="pl-10" placeholder="M-Pesa, Bank Transfer, etc." {...field} />
+                      <Input className="pl-10" placeholder="Bank Transfer, M-Pesa, etc." {...field} />
                     </div>
                   </FormControl>
                   <FormMessage />
