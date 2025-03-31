@@ -2,6 +2,7 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { QuickStats } from "@/components/dashboard/QuickStats";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
+import { UserGreeting } from "@/components/dashboard/UserGreeting";
 
 export default function Index() {
   return (
@@ -9,6 +10,8 @@ export default function Index() {
       <Sidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
+          <UserGreeting userName="Sandra" />
+          
           <h1 className="text-3xl font-bold text-sacco-900 mb-8">Dashboard</h1>
           
           <QuickStats />
