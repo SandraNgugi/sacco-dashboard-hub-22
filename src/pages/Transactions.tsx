@@ -12,6 +12,7 @@ import {
 import { SendMoneyDialog } from "@/components/transactions/SendMoneyDialog";
 import { DepositMoneyDialog } from "@/components/transactions/DepositMoneyDialog";
 import { WithdrawMoneyDialog } from "@/components/transactions/WithdrawMoneyDialog";
+import { DateRangeFilter } from "@/components/transactions/DateRangeFilter";
 
 // Sample transaction data for demonstration
 const transactions = [
@@ -125,25 +126,70 @@ const getTransactionTypeDetails = (type: string) => {
   }
 };
 
+// Helper to parse date string to Date object
+const parseTransactionDate = (dateStr: string): Date => {
+  const months: Record<string, number> = {
+    'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
+    'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
+  };
+  
+  const [month, day, year] = dateStr.split(' ');
+  return new Date(parseInt(year), months[month], parseInt(day.replace(',', '')));
+};
+
 const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSendMoneyOpen, setIsSendMoneyOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
   
-  // Filter transactions based on search term
-  const filteredTransactions = transactions.filter(transaction => 
-    transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    getTransactionTypeDetails(transaction.type).label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter transactions based on search term and date range
+  const filteredTransactions = transactions.filter(transaction => {
+    // Text search filter
+    const matchesSearch = 
+      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getTransactionTypeDetails(transaction.type).label.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Date range filter
+    let matchesDateRange = true;
+    if (dateRange.start || dateRange.end) {
+      const transactionDate = parseTransactionDate(transaction.date);
+      
+      if (dateRange.start && dateRange.end) {
+        // Include transactions between start and end dates (inclusive)
+        matchesDateRange = 
+          transactionDate >= dateRange.start && 
+          transactionDate <= dateRange.end;
+      } else if (dateRange.start) {
+        // Include transactions on or after start date
+        matchesDateRange = transactionDate >= dateRange.start;
+      } else if (dateRange.end) {
+        // Include transactions on or before end date
+        matchesDateRange = transactionDate <= dateRange.end;
+      }
+    }
+    
+    return matchesSearch && matchesDateRange;
+  });
+
+  // Handle date range change
+  const handleDateRangeChange = (start: Date | undefined, end: Date | undefined) => {
+    setDateRange({ start, end });
+  };
+
+  // Clear date filter
+  const clearDateFilter = () => {
+    setDateRange({});
+  };
 
   // Calculate summary statistics
-  const totalDeposits = transactions
+  const totalDeposits = filteredTransactions
     .filter(t => t.type === "deposit" || t.type === "dividend")
     .reduce((sum, t) => sum + parseInt(t.amount.replace("KES ", "").replace(",", "")), 0);
   
-  const totalWithdrawals = transactions
+  const totalWithdrawals = filteredTransactions
     .filter(t => t.type === "withdrawal" || t.type === "fee")
     .reduce((sum, t) => sum + parseInt(t.amount.replace("KES ", "").replace(",", "")), 0);
 
@@ -189,10 +235,6 @@ const Transactions = () => {
                 Withdraw Money
               </Button>
               <Button variant="outline" className="border-sacco-200 text-sacco-700">
-                <Calendar className="w-4 h-4 mr-2" />
-                Filter by Date
-              </Button>
-              <Button variant="outline" className="border-sacco-200 text-sacco-700">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
@@ -236,7 +278,7 @@ const Transactions = () => {
 
           {/* Search and Filter */}
           <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-sacco-500" />
                 <Input
@@ -246,10 +288,16 @@ const Transactions = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Button variant="outline" className="text-sacco-600">
-                <Filter className="w-5 h-5 mr-2" />
-                Filters
-              </Button>
+              <div className="flex gap-2">
+                <DateRangeFilter
+                  onDateRangeChange={handleDateRangeChange}
+                  onClearFilter={clearDateFilter}
+                />
+                <Button variant="outline" className="text-sacco-600">
+                  <Filter className="w-5 h-5 mr-2" />
+                  Filters
+                </Button>
+              </div>
             </div>
           </div>
 
