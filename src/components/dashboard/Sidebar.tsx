@@ -1,11 +1,12 @@
 
-import { Wallet, Settings, LogOut, FileText, Shield } from "lucide-react";
+import { Wallet, Settings, LogOut, FileText, Shield, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SaccoLogo } from "./SaccoLogo";
 import { useLocation, Link } from "react-router-dom";
 
 const menuItems = [
   { icon: FileText, label: "Transactions", href: "/transactions" },
+  { icon: Calendar, label: "Loans", href: "/loans" },
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
