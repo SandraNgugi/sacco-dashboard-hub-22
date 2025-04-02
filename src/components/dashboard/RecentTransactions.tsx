@@ -3,9 +3,11 @@ import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useState } from "react";
 import { DateRangeFilter } from "@/components/transactions/DateRangeFilter";
 
-const transactions = [
+// Sample data - in a real app, this would be fetched from an API
+const allTransactions = [
   {
     id: 1,
+    memberId: "123456789012", // Current user's ID
     member: "John Kamau",
     type: "deposit",
     amount: "KES 25,000",
@@ -14,7 +16,8 @@ const transactions = [
   },
   {
     id: 2,
-    member: "Mary Wanjiku",
+    memberId: "123456789012", // Current user's ID
+    member: "John Kamau",
     type: "withdrawal",
     amount: "KES 15,000",
     date: "May 12, 2024",
@@ -22,6 +25,7 @@ const transactions = [
   },
   {
     id: 3,
+    memberId: "987654321098", // Different user
     member: "Peter Njoroge",
     type: "deposit",
     amount: "KES 50,000",
@@ -30,11 +34,21 @@ const transactions = [
   },
   {
     id: 4,
+    memberId: "456789012345", // Different user
     member: "Sarah Muthoni",
     type: "withdrawal",
     amount: "KES 10,000",
     date: "May 5, 2024",
     time: "10:15 AM",
+  },
+  {
+    id: 5,
+    memberId: "123456789012", // Current user's ID
+    member: "John Kamau",
+    type: "deposit",
+    amount: "KES 10,000",
+    date: "May 1, 2024",
+    time: "9:30 AM",
   },
 ];
 
@@ -49,11 +63,20 @@ const parseTransactionDate = (dateStr: string): Date => {
   return new Date(parseInt(year), months[month], parseInt(day.replace(',', '')));
 };
 
-export function RecentTransactions() {
+interface RecentTransactionsProps {
+  accountNumber: string;
+}
+
+export function RecentTransactions({ accountNumber }: RecentTransactionsProps) {
   const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
 
+  // Get only the current user's transactions
+  const currentUserTransactions = allTransactions.filter(
+    transaction => transaction.memberId === accountNumber
+  );
+
   // Filter transactions based on date range
-  const filteredTransactions = transactions.filter(transaction => {
+  const filteredTransactions = currentUserTransactions.filter(transaction => {
     // Date range filter
     let matchesDateRange = true;
     if (dateRange.start || dateRange.end) {
@@ -90,7 +113,7 @@ export function RecentTransactions() {
     <div className="bg-white rounded-xl border border-gray-200 animate-fade-in">
       <div className="p-6 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-semibold text-sacco-900">
-          Recent Transactions
+          Your Recent Transactions
         </h2>
         <DateRangeFilter 
           onDateRangeChange={handleDateRangeChange} 
@@ -128,7 +151,7 @@ export function RecentTransactions() {
                   </div>
                   <div>
                     <p className="font-medium text-sacco-900">
-                      {transaction.member}
+                      {transaction.type === "deposit" ? "Deposit" : "Withdrawal"}
                     </p>
                     <p className="text-sm text-sacco-500">{transaction.date}, {transaction.time}</p>
                   </div>

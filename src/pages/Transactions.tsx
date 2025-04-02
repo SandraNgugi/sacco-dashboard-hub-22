@@ -72,17 +72,8 @@ export default function Transactions() {
           
           <QuickStats />
           
-          <div className="mt-8 bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">Transaction History</h2>
-              <div className="mt-4 sm:mt-0">
-                <DateRangeFilter 
-                  onDateRangeChange={handleDateRangeChange} 
-                  onClearFilter={() => setDateRange({})}
-                />
-              </div>
-            </div>
-            <RecentTransactions />
+          <div className="mt-8">
+            <RecentTransactions accountNumber={accountNumber} />
           </div>
         </div>
       </main>
