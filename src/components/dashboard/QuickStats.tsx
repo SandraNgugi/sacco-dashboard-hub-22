@@ -1,27 +1,20 @@
 
-import { Wallet, Users, TrendingUp, PiggyBank } from "lucide-react";
+import { Wallet, TrendingUp, PiggyBank } from "lucide-react";
 
 const stats = [
   {
-    label: "Total Savings",
-    value: "KES 12.5M",
+    label: "Account Balance",
+    value: "KES 352,500",
     icon: Wallet,
     trend: "+12.5%",
     trendType: "positive",
   },
   {
-    label: "Active Members",
-    value: "2,345",
-    icon: Users,
-    trend: "+3.2%",
-    trendType: "positive",
-  },
-  {
     label: "Total Loans",
-    value: "KES 8.3M",
+    value: "KES 123,000",
     icon: TrendingUp,
-    trend: "+5.4%",
-    trendType: "positive",
+    trend: "-5.4%",
+    trendType: "negative",
   },
   {
     label: "Available Funds",
@@ -34,7 +27,7 @@ const stats = [
 
 export function QuickStats() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
       {stats.map((stat) => (
         <div
           key={stat.label}

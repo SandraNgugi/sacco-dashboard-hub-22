@@ -8,16 +8,27 @@ import { Button } from "@/components/ui/button";
 import { DateRangeFilter } from "@/components/transactions/DateRangeFilter";
 import { DepositMoneyDialog } from "@/components/transactions/DepositMoneyDialog";
 import { WithdrawMoneyDialog } from "@/components/transactions/WithdrawMoneyDialog";
-import { Banknote, Wallet } from "lucide-react";
+import { Banknote, Wallet, Copy } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 
 export default function Transactions() {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
 
+  // Mock account number - would come from user profile or auth context in real app
+  const accountNumber = "SCO-1234-5678-9012";
+  
   // Handle date range change
   const handleDateRangeChange = (start: Date | undefined, end: Date | undefined) => {
     setDateRange({ start, end });
+  };
+  
+  // Copy account number to clipboard
+  const copyAccountNumber = () => {
+    navigator.clipboard.writeText(accountNumber);
+    toast.success("Account number copied to clipboard");
   };
 
   return (
@@ -38,6 +49,26 @@ export default function Transactions() {
               </Button>
             </div>
           </div>
+          
+          <Card className="mb-6 bg-white border border-gray-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Account Number</p>
+                  <p className="text-lg font-medium">{accountNumber}</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2" 
+                  onClick={copyAccountNumber}
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           
           <QuickStats />
           
