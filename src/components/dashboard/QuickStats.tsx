@@ -1,5 +1,5 @@
 
-import { Wallet, TrendingUp, PiggyBank } from "lucide-react";
+import { Wallet, TrendingUp } from "lucide-react";
 
 const stats = [
   {
@@ -16,18 +16,11 @@ const stats = [
     trend: "-5.4%",
     trendType: "negative",
   },
-  {
-    label: "Available Funds",
-    value: "KES 4.2M",
-    icon: PiggyBank,
-    trend: "+2.1%",
-    trendType: "positive",
-  },
 ];
 
 export function QuickStats() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
       {stats.map((stat) => (
         <div
           key={stat.label}

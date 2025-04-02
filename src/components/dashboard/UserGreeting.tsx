@@ -26,7 +26,7 @@ export function UserGreeting({ userName }: UserGreetingProps) {
       <h2 className="text-2xl font-medium text-sacco-700">
         {greeting}, <span className="font-semibold text-sacco-900">{userName}</span>
       </h2>
-      <p className="text-sacco-600 mt-1">Welcome to your dashboard</p>
+      <p className="text-sacco-600 mt-1">Welcome to Times U Sacco</p>
     </div>
   );
 }
