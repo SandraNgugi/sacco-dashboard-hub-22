@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Transactions from "./pages/Transactions";
@@ -13,6 +12,7 @@ import ManageMembers from "./pages/admin/ManageMembers";
 import ManageTransactions from "./pages/admin/ManageTransactions";
 import ManageLoans from "./pages/admin/ManageLoans";
 import ReportsPage from "./pages/admin/ReportsPage";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const App = () => {
   // Create a client inside the component
@@ -20,10 +20,8 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <BrowserRouter>
+        <TooltipProvider>
           <Routes>
             <Route path="/" element={<Navigate to="/transactions" replace />} />
             <Route path="/transactions" element={<Transactions />} />
@@ -39,8 +37,10 @@ const App = () => {
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };

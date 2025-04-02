@@ -13,6 +13,12 @@ import { Banknote, Wallet } from "lucide-react";
 export default function Transactions() {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
+
+  // Handle date range change
+  const handleDateRangeChange = (start: Date | undefined, end: Date | undefined) => {
+    setDateRange({ start, end });
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -20,7 +26,7 @@ export default function Transactions() {
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-            <UserGreeting />
+            <UserGreeting userName="John Doe" />
             <div className="flex gap-4 mt-4 md:mt-0">
               <Button onClick={() => setIsDepositOpen(true)} className="gap-2">
                 <Banknote className="h-4 w-4" />
@@ -39,7 +45,10 @@ export default function Transactions() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-800">Transaction History</h2>
               <div className="mt-4 sm:mt-0">
-                <DateRangeFilter />
+                <DateRangeFilter 
+                  onDateRangeChange={handleDateRangeChange} 
+                  onClearFilter={() => setDateRange({})}
+                />
               </div>
             </div>
             <RecentTransactions />
