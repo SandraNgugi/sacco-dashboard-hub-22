@@ -5,16 +5,13 @@ import { UserGreeting } from "@/components/dashboard/UserGreeting";
 import { QuickStats } from "@/components/dashboard/QuickStats";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { Button } from "@/components/ui/button";
-import { DateRangeFilter } from "@/components/transactions/DateRangeFilter";
-import { DepositMoneyDialog } from "@/components/transactions/DepositMoneyDialog";
-import { WithdrawMoneyDialog } from "@/components/transactions/WithdrawMoneyDialog";
-import { Banknote, Wallet, Copy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Copy, Send } from "lucide-react";
+import { SendToMobileDialog } from "@/components/transactions/SendToMobileDialog";
 
 export default function Transactions() {
-  const [isDepositOpen, setIsDepositOpen] = useState(false);
-  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [isSendToMobileOpen, setIsSendToMobileOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
 
   // Purely numeric account number - would come from user profile or auth context in real app
@@ -39,13 +36,9 @@ export default function Transactions() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <UserGreeting userName="Member" />
             <div className="flex gap-4 mt-4 md:mt-0">
-              <Button onClick={() => setIsDepositOpen(true)} className="gap-2">
-                <Banknote className="h-4 w-4" />
-                Deposit
-              </Button>
-              <Button onClick={() => setIsWithdrawOpen(true)} variant="outline" className="gap-2">
-                <Wallet className="h-4 w-4" />
-                Withdraw
+              <Button onClick={() => setIsSendToMobileOpen(true)} className="gap-2">
+                <Send className="h-4 w-4" />
+                Send to Mobile
               </Button>
             </div>
           </div>
@@ -78,8 +71,7 @@ export default function Transactions() {
         </div>
       </main>
 
-      <DepositMoneyDialog isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />
-      <WithdrawMoneyDialog isOpen={isWithdrawOpen} onClose={() => setIsWithdrawOpen(false)} />
+      <SendToMobileDialog isOpen={isSendToMobileOpen} onClose={() => setIsSendToMobileOpen(false)} />
     </div>
   );
 }
