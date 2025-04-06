@@ -5,6 +5,10 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { UserGreeting } from "@/components/dashboard/UserGreeting";
 
 export default function Index() {
+  // This would typically come from a user context or authentication state
+  // Using the same account number as in the Transactions page for consistency
+  const accountNumber = "123456789012";
+  
   return (
     <div className="flex min-h-screen bg-sacco-50">
       <Sidebar />
@@ -18,7 +22,7 @@ export default function Index() {
           
           <div className="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2">
-              <RecentTransactions />
+              <RecentTransactions accountNumber={accountNumber} />
             </div>
             <div className="bg-white rounded-xl border border-gray-200 h-[400px] animate-fade-in">
               <div className="p-6 border-b border-gray-200">
