@@ -4,7 +4,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, PlusCircle, Check, X } from "lucide-react";
+import { Search, PlusCircle, Check, X, Eye, Banknote, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -79,6 +79,9 @@ export default function ManageLoans() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = useState(false);
+  const [isPaymentReminderDialogOpen, setIsPaymentReminderDialogOpen] = useState(false);
+  const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
   const [currentLoan, setCurrentLoan] = useState<any | null>(null);
   const { toast } = useToast();
 
@@ -135,6 +138,38 @@ export default function ManageLoans() {
     });
   };
 
+  const handleSendPaymentReminder = () => {
+    if (!currentLoan) return;
+    
+    setIsPaymentReminderDialogOpen(false);
+    
+    toast({
+      title: "Payment Reminder Sent",
+      description: `Payment reminder sent to ${currentLoan.memberName}.`,
+    });
+  };
+
+  const handleMarkAsPaid = () => {
+    if (!currentLoan) return;
+    
+    const updatedLoans = loans.map(loan => 
+      loan.id === currentLoan.id ? 
+      { 
+        ...loan, 
+        status: 'paid',
+        progress: 100,
+      } : loan
+    );
+    
+    setLoans(updatedLoans);
+    setIsMarkPaidDialogOpen(false);
+    
+    toast({
+      title: "Loan Marked as Paid",
+      description: "Loan has been marked as fully paid.",
+    });
+  };
+
   const openApproveDialog = (loan: any) => {
     setCurrentLoan(loan);
     setIsApproveDialogOpen(true);
@@ -143,6 +178,21 @@ export default function ManageLoans() {
   const openRejectDialog = (loan: any) => {
     setCurrentLoan(loan);
     setIsRejectDialogOpen(true);
+  };
+
+  const openViewDetailsDialog = (loan: any) => {
+    setCurrentLoan(loan);
+    setIsViewDetailsDialogOpen(true);
+  };
+
+  const openPaymentReminderDialog = (loan: any) => {
+    setCurrentLoan(loan);
+    setIsPaymentReminderDialogOpen(true);
+  };
+
+  const openMarkPaidDialog = (loan: any) => {
+    setCurrentLoan(loan);
+    setIsMarkPaidDialogOpen(true);
   };
 
   return (
@@ -239,6 +289,8 @@ export default function ManageLoans() {
                           ? 'bg-yellow-100 text-yellow-800'
                           : loan.status === 'rejected'
                           ? 'bg-gray-100 text-gray-800'
+                          : loan.status === 'paid'
+                          ? 'bg-blue-100 text-blue-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
                         {loan.status}
@@ -283,6 +335,59 @@ export default function ManageLoans() {
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
+                      )}
+                      
+                      {(loan.status === 'active' || loan.status === 'overdue') && (
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openViewDetailsDialog(loan)}
+                            className="h-8 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openMarkPaidDialog(loan)}
+                            className="h-8 border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700 hover:border-green-300"
+                          >
+                            <Banknote className="w-4 h-4" />
+                          </Button>
+                          {loan.status === 'overdue' && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openPaymentReminderDialog(loan)}
+                              className="h-8 border-yellow-200 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-300"
+                            >
+                              <AlertTriangle className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                      
+                      {loan.status === 'rejected' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openViewDetailsDialog(loan)}
+                          className="h-8 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      )}
+                      
+                      {loan.status === 'paid' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openViewDetailsDialog(loan)}
+                          className="h-8 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
                       )}
                     </TableCell>
                   </TableRow>
@@ -362,6 +467,139 @@ export default function ManageLoans() {
             </Button>
             <Button onClick={handleRejectLoan} variant="destructive">
               Reject Loan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Loan Details Dialog */}
+      <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Loan Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about this loan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {currentLoan && (
+              <div className="space-y-4">
+                <div className="flex items-center p-4 bg-slate-50 rounded-lg">
+                  <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium mr-4">
+                    {currentLoan.memberName.split(' ').map((n: string) => n[0]).join('')}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">{currentLoan.memberName}</div>
+                    <div className="text-sm text-slate-500">{currentLoan.membershipNumber}</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-slate-500">Loan Type</p>
+                    <p className="font-medium">{currentLoan.loanType}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Amount</p>
+                    <p className="font-medium">{currentLoan.amount}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Disbursed Date</p>
+                    <p className="font-medium">{currentLoan.disbursedDate || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Due Date</p>
+                    <p className="font-medium">{currentLoan.dueDate || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Status</p>
+                    <p className="font-medium capitalize">{currentLoan.status}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Repayment</p>
+                    <p className="font-medium">{currentLoan.progress}%</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsViewDetailsDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Reminder Dialog */}
+      <Dialog open={isPaymentReminderDialogOpen} onOpenChange={setIsPaymentReminderDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Payment Reminder</DialogTitle>
+            <DialogDescription>
+              Send a payment reminder to the member for overdue loan payments.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {currentLoan && (
+              <div className="flex items-center p-4 bg-slate-50 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium mr-4">
+                  {currentLoan.memberName.split(' ').map((n: string) => n[0]).join('')}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">{currentLoan.memberName}</div>
+                  <div className="text-sm text-slate-500">{currentLoan.membershipNumber}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">{currentLoan.amount}</div>
+                  <div className="text-sm text-slate-500 text-red-600">Overdue</div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPaymentReminderDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendPaymentReminder} className="bg-yellow-600 hover:bg-yellow-700">
+              Send Reminder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark as Paid Dialog */}
+      <Dialog open={isMarkPaidDialogOpen} onOpenChange={setIsMarkPaidDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mark as Paid</DialogTitle>
+            <DialogDescription>
+              Mark this loan as fully paid. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {currentLoan && (
+              <div className="flex items-center p-4 bg-slate-50 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium mr-4">
+                  {currentLoan.memberName.split(' ').map((n: string) => n[0]).join('')}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">{currentLoan.memberName}</div>
+                  <div className="text-sm text-slate-500">{currentLoan.membershipNumber}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">{currentLoan.amount}</div>
+                  <div className="text-sm text-slate-500">{currentLoan.loanType}</div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMarkPaidDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleMarkAsPaid} className="bg-green-600 hover:bg-green-700">
+              Mark as Paid
             </Button>
           </DialogFooter>
         </DialogContent>
