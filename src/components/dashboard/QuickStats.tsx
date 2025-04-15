@@ -1,24 +1,64 @@
 
 import { Wallet, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTransactionStore } from "@/services/transactionService";
 
-const stats = [
-  {
-    label: "Account Balance",
-    value: "KES 352,500",
-    icon: Wallet,
-    trend: "+12.5%",
-    trendType: "positive",
-  },
-  {
-    label: "Total Loans",
-    value: "KES 123,000",
-    icon: TrendingUp,
-    trend: "-5.4%",
-    trendType: "negative",
-  },
-];
+interface QuickStatsProps {
+  accountNumber: string;
+}
 
-export function QuickStats() {
+export function QuickStats({ accountNumber }: QuickStatsProps) {
+  const [balance, setBalance] = useState("0");
+  const { transactions } = useTransactionStore();
+  
+  useEffect(() => {
+    if (accountNumber) {
+      calculateBalance();
+    }
+  }, [accountNumber, transactions]);
+  
+  // Calculate balance from transactions
+  const calculateBalance = () => {
+    const userTransactions = transactions.filter(
+      transaction => transaction.memberId === accountNumber
+    );
+    
+    let totalBalance = 0;
+    
+    userTransactions.forEach(transaction => {
+      const amountStr = transaction.amount.replace(/[^0-9.-]+/g, "");
+      const amount = parseFloat(amountStr);
+      
+      if (!isNaN(amount)) {
+        if (transaction.type === "deposit" || transaction.type === "dividend" || transaction.type === "loan-repayment") {
+          totalBalance += amount;
+        } else {
+          totalBalance -= amount;
+        }
+      }
+    });
+    
+    // Format with thousands separator
+    setBalance(totalBalance.toLocaleString('en-KE'));
+  };
+
+  const stats = [
+    {
+      label: "Account Balance",
+      value: `KES ${balance}`,
+      icon: Wallet,
+      trend: "+12.5%",
+      trendType: "positive",
+    },
+    {
+      label: "Total Loans",
+      value: "KES 123,000",
+      icon: TrendingUp,
+      trend: "-5.4%",
+      trendType: "negative",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
       {stats.map((stat) => (

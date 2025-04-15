@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { UserGreeting } from "@/components/dashboard/UserGreeting";
 import { QuickStats } from "@/components/dashboard/QuickStats";
@@ -12,18 +12,25 @@ import { SendToMobileDialog } from "@/components/transactions/SendToMobileDialog
 import { SendMoneyDialog } from "@/components/transactions/SendMoneyDialog";
 import { DepositMoneyDialog } from "@/components/transactions/DepositMoneyDialog";
 import { useTransactionStore, createTransaction } from "@/services/transactionService";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Transactions() {
   const [isSendToMobileOpen, setIsSendToMobileOpen] = useState(false);
   const [isSendMoneyOpen, setIsSendMoneyOpen] = useState(false);
   const [isDepositMoneyOpen, setIsDepositMoneyOpen] = useState(false);
+  const [accountNumber, setAccountNumber] = useState("");
+  const [userName, setUserName] = useState("");
   
   // Transaction service
   const { addTransaction } = useTransactionStore();
-
-  // Purely numeric account number - would come from user profile or auth context in real app
-  const accountNumber = "123456789012";
-  const userName = "John Kamau"; // Mock user name - would come from auth context in real app
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    if (user?.user_metadata) {
+      setAccountNumber(user.user_metadata.account_number || "");
+      setUserName(user.user_metadata.full_name || "");
+    }
+  }, [user]);
   
   // Copy account number to clipboard
   const copyAccountNumber = () => {
@@ -122,7 +129,7 @@ export default function Transactions() {
             </CardContent>
           </Card>
           
-          <QuickStats />
+          <QuickStats accountNumber={accountNumber} />
           
           <div className="mt-8">
             <RecentTransactions accountNumber={accountNumber} />
