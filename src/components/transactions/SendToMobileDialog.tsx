@@ -1,156 +1,121 @@
 
 import { useState } from "react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Phone, Send } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
-const formSchema = z.object({
-  phoneNumber: z.string().min(10, {
-    message: "Phone number must be at least 10 digits.",
-  }).regex(/^\d+$/, {
-    message: "Phone number must contain only digits.",
-  }),
-  amount: z.string().refine(
-    (val) => {
-      const num = parseFloat(val);
-      return !isNaN(num) && num > 0;
-    },
-    {
-      message: "Amount must be a positive number.",
-    }
-  ),
-  description: z.string().optional(),
-});
-
-type SendToMobileFormValues = z.infer<typeof formSchema>;
+import { z } from "zod";
 
 interface SendToMobileDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onSend?: (phoneNumber: string, amount: string, description?: string) => void;
 }
 
-export function SendToMobileDialog({ isOpen, onClose }: SendToMobileDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export function SendToMobileDialog({ isOpen, onClose, onSend }: SendToMobileDialogProps) {
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const form = useForm<SendToMobileFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      phoneNumber: "",
-      amount: "",
-      description: "",
-    },
-  });
-
-  const onSubmit = async (values: SendToMobileFormValues) => {
-    setIsSubmitting(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Form validation
+    const formSchema = z.object({
+      phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+      amount: z.string()
+        .refine((val) => !isNaN(Number(val)), "Amount must be a number")
+        .refine((val) => Number(val) > 0, "Amount must be greater than 0"),
+    });
     
     try {
-      // Simulate API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      formSchema.parse({ phoneNumber, amount });
+      setErrors({});
       
-      // Log the form values
-      console.log("Send to mobile form values:", values);
+      // Send the data to parent component
+      if (onSend) {
+        onSend(phoneNumber, amount, description);
+      }
       
-      // Show success toast
-      toast.success("Money sent successfully", {
-        description: `KES ${values.amount} has been sent to ${values.phoneNumber}.`,
-      });
+      // Reset form
+      setPhoneNumber("");
+      setAmount("");
+      setDescription("");
       
-      // Reset form and close dialog
-      form.reset();
-      onClose();
+      console.info("Send to mobile form values:", { phoneNumber, amount, description });
     } catch (error) {
-      toast.error("Failed to send money", {
-        description: "Please try again later.",
-      });
-    } finally {
-      setIsSubmitting(false);
+      if (error instanceof z.ZodError) {
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path) {
+            newErrors[err.path[0]] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
     }
   };
 
+  const handleClose = () => {
+    // Reset form and errors
+    setPhoneNumber("");
+    setAmount("");
+    setDescription("");
+    setErrors({});
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-sacco-700" />
-            Send to Mobile
-          </DialogTitle>
-          <DialogDescription>
-            Send money directly to a mobile number.
-          </DialogDescription>
+          <DialogTitle>Send Money to Mobile</DialogTitle>
         </DialogHeader>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
-            <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 h-4 w-4 text-sacco-500" />
-                      <Input className="pl-10" placeholder="07XXXXXXXX" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              placeholder="e.g., 0712345678"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
             />
-            
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount (KES)</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="1" placeholder="1000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-xs">{errors.phoneNumber}</p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="amount">Amount (KES)</Label>
+            <Input
+              id="amount"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
             />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Payment for..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            {errors.amount && (
+              <p className="text-red-500 text-xs">{errors.amount}</p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (Optional)</Label>
+            <Input
+              id="description"
+              placeholder="e.g., Payment for groceries"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
-            
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" type="button" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Sending..." : "Send Money"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+          </div>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="submit">Send Money</Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -9,23 +9,37 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Copy, Send } from "lucide-react";
 import { SendToMobileDialog } from "@/components/transactions/SendToMobileDialog";
+import { useTransactionStore, createTransaction } from "@/services/transactionService";
 
 export default function Transactions() {
   const [isSendToMobileOpen, setIsSendToMobileOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
+  // Transaction service
+  const { addTransaction } = useTransactionStore();
 
   // Purely numeric account number - would come from user profile or auth context in real app
   const accountNumber = "123456789012";
-  
-  // Handle date range change
-  const handleDateRangeChange = (start: Date | undefined, end: Date | undefined) => {
-    setDateRange({ start, end });
-  };
+  const userName = "John Kamau"; // Mock user name - would come from auth context in real app
   
   // Copy account number to clipboard
   const copyAccountNumber = () => {
     navigator.clipboard.writeText(accountNumber);
     toast.success("Account number copied to clipboard");
+  };
+
+  // Handle mobile money transaction
+  const handleSendToMobile = (phoneNumber: string, amount: string, description?: string) => {
+    // Create and add the transaction to the store
+    const newTransaction = createTransaction(
+      accountNumber,
+      userName,
+      "withdrawal",
+      amount,
+      description || "Send to mobile money"
+    );
+    
+    addTransaction(newTransaction);
+    toast.success(`KES ${amount} sent to ${phoneNumber} successfully`);
+    setIsSendToMobileOpen(false);
   };
 
   return (
@@ -34,7 +48,7 @@ export default function Transactions() {
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-            <UserGreeting userName="Member" />
+            <UserGreeting userName={userName.split(" ")[0]} />
             <div className="flex gap-4 mt-4 md:mt-0">
               <Button onClick={() => setIsSendToMobileOpen(true)} className="gap-2">
                 <Send className="h-4 w-4" />
@@ -71,7 +85,11 @@ export default function Transactions() {
         </div>
       </main>
 
-      <SendToMobileDialog isOpen={isSendToMobileOpen} onClose={() => setIsSendToMobileOpen(false)} />
+      <SendToMobileDialog 
+        isOpen={isSendToMobileOpen} 
+        onClose={() => setIsSendToMobileOpen(false)}
+        onSend={handleSendToMobile}
+      />
     </div>
   );
 }

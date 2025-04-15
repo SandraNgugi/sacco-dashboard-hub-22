@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Button } from "@/components/ui/button";
@@ -6,85 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search } from "lucide-react";
 import { DateRangeFilter } from "@/components/transactions/DateRangeFilter";
-
-// Sample transaction data for demonstration
-const transactions = [
-  {
-    id: 1,
-    memberName: "John Kamau",
-    membershipNumber: "SCO001",
-    type: "deposit",
-    amount: "KES 25,000",
-    date: "May 15, 2024",
-    time: "2:45 PM",
-    description: "Monthly contribution",
-    reference: "SCO001-DEP-12345",
-    status: "completed"
-  },
-  {
-    id: 2,
-    memberName: "Mary Wanjiku",
-    membershipNumber: "SCO002",
-    type: "withdrawal",
-    amount: "KES 15,000",
-    date: "May 12, 2024",
-    time: "1:30 PM",
-    description: "Emergency funds",
-    reference: "SCO001-WDR-12346",
-    status: "completed"
-  },
-  {
-    id: 3,
-    memberName: "Peter Njoroge",
-    membershipNumber: "SCO003",
-    type: "loan-repayment",
-    amount: "KES 5,000",
-    date: "May 10, 2024",
-    time: "11:20 AM",
-    description: "Loan installment",
-    reference: "SCO001-LNR-12347",
-    status: "completed"
-  },
-  {
-    id: 4,
-    memberName: "Sarah Muthoni",
-    membershipNumber: "SCO004",
-    type: "dividend",
-    amount: "KES 8,500",
-    date: "May 5, 2024",
-    time: "10:15 AM",
-    description: "Annual dividend payout",
-    reference: "SCO001-DIV-12348",
-    status: "completed"
-  },
-  {
-    id: 5,
-    memberName: "John Kamau",
-    membershipNumber: "SCO001",
-    type: "deposit",
-    amount: "KES 10,000",
-    date: "May 1, 2024",
-    time: "9:30 AM",
-    description: "Additional savings",
-    reference: "SCO001-DEP-12349",
-    status: "completed"
-  },
-  {
-    id: 6,
-    memberName: "David Otieno",
-    membershipNumber: "SCO007",
-    type: "fee",
-    amount: "KES 500",
-    date: "April 30, 2024",
-    time: "3:45 PM",
-    description: "Transaction fee",
-    reference: "SCO001-FEE-12350",
-    status: "completed"
-  },
-];
+import { useTransactionStore, parseTransactionDate, Transaction } from "@/services/transactionService";
 
 // Helper function to get appropriate icon and color based on transaction type
-const getTransactionTypeDetails = (type: string) => {
+const getTransactionTypeDetails = (type: Transaction['type']) => {
   switch (type) {
     case "deposit":
       return { 
@@ -131,30 +55,20 @@ const getTransactionTypeDetails = (type: string) => {
   }
 };
 
-// Helper to parse date string to Date object
-const parseTransactionDate = (dateStr: string): Date => {
-  const months: Record<string, number> = {
-    'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
-    'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
-  };
-  
-  const [month, day, year] = dateStr.split(' ');
-  return new Date(parseInt(year), months[month], parseInt(day.replace(',', '')));
-};
-
 export default function ManageTransactions() {
+  const { transactions } = useTransactionStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
   
   // Get unique members for filtering
   const uniqueMembers = Array.from(
-    new Set(transactions.map(t => t.membershipNumber))
-  ).map(membershipNumber => {
-    const transaction = transactions.find(t => t.membershipNumber === membershipNumber);
+    new Set(transactions.map(t => t.memberId))
+  ).map(memberId => {
+    const transaction = transactions.find(t => t.memberId === memberId);
     return {
-      membershipNumber,
-      name: transaction?.memberName || ""
+      membershipNumber: memberId,
+      name: transaction?.member || ""
     };
   });
   
@@ -162,13 +76,13 @@ export default function ManageTransactions() {
   const filteredTransactions = transactions.filter(transaction => {
     // Text search filter
     const matchesSearch = 
-      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (transaction.reference?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      transaction.member.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getTransactionTypeDetails(transaction.type).label.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Member filter
-    const matchesMember = selectedMember ? transaction.membershipNumber === selectedMember : true;
+    const matchesMember = selectedMember ? transaction.memberId === selectedMember : true;
     
     // Date range filter
     let matchesDateRange = true;
@@ -282,11 +196,11 @@ export default function ManageTransactions() {
                       <TableCell>
                         <div className="flex items-center">
                           <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium mr-3">
-                            {transaction.memberName.split(' ').map(n => n[0]).join('')}
+                            {transaction.member.split(' ').map(n => n[0]).join('')}
                           </div>
                           <div>
-                            <div className="font-medium">{transaction.memberName}</div>
-                            <div className="text-xs text-slate-500">{transaction.membershipNumber}</div>
+                            <div className="font-medium">{transaction.member}</div>
+                            <div className="text-xs text-slate-500">{transaction.memberId}</div>
                           </div>
                         </div>
                       </TableCell>
@@ -298,8 +212,8 @@ export default function ManageTransactions() {
                           <span className="font-medium">{typeDetails.label}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{transaction.description}</TableCell>
-                      <TableCell className="text-slate-500 text-sm">{transaction.reference}</TableCell>
+                      <TableCell>{transaction.description || '-'}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{transaction.reference || '-'}</TableCell>
                       <TableCell>
                         <div>{transaction.date}</div>
                         <div className="text-sm text-slate-500">{transaction.time}</div>

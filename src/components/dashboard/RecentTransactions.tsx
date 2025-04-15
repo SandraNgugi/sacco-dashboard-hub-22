@@ -1,67 +1,8 @@
 
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DateRangeFilter } from "@/components/transactions/DateRangeFilter";
-
-// Sample data - in a real app, this would be fetched from an API
-const allTransactions = [
-  {
-    id: 1,
-    memberId: "123456789012", // Current user's ID
-    member: "John Kamau",
-    type: "deposit",
-    amount: "KES 25,000",
-    date: "May 15, 2024",
-    time: "2:45 PM",
-  },
-  {
-    id: 2,
-    memberId: "123456789012", // Current user's ID
-    member: "John Kamau",
-    type: "withdrawal",
-    amount: "KES 15,000",
-    date: "May 12, 2024",
-    time: "1:30 PM",
-  },
-  {
-    id: 3,
-    memberId: "987654321098", // Different user
-    member: "Peter Njoroge",
-    type: "deposit",
-    amount: "KES 50,000",
-    date: "May 10, 2024",
-    time: "11:20 AM",
-  },
-  {
-    id: 4,
-    memberId: "456789012345", // Different user
-    member: "Sarah Muthoni",
-    type: "withdrawal",
-    amount: "KES 10,000",
-    date: "May 5, 2024",
-    time: "10:15 AM",
-  },
-  {
-    id: 5,
-    memberId: "123456789012", // Current user's ID
-    member: "John Kamau",
-    type: "deposit",
-    amount: "KES 10,000",
-    date: "May 1, 2024",
-    time: "9:30 AM",
-  },
-];
-
-// Helper to parse date string to Date object
-const parseTransactionDate = (dateStr: string): Date => {
-  const months: Record<string, number> = {
-    'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
-    'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
-  };
-  
-  const [month, day, year] = dateStr.split(' ');
-  return new Date(parseInt(year), months[month], parseInt(day.replace(',', '')));
-};
+import { useTransactionStore, parseTransactionDate } from "@/services/transactionService";
 
 interface RecentTransactionsProps {
   accountNumber: string;
@@ -69,9 +10,10 @@ interface RecentTransactionsProps {
 
 export function RecentTransactions({ accountNumber }: RecentTransactionsProps) {
   const [dateRange, setDateRange] = useState<{ start?: Date, end?: Date }>({});
+  const { transactions } = useTransactionStore();
 
   // Get only the current user's transactions
-  const currentUserTransactions = allTransactions.filter(
+  const currentUserTransactions = transactions.filter(
     transaction => transaction.memberId === accountNumber
   );
 
@@ -132,12 +74,12 @@ export function RecentTransactions({ accountNumber }: RecentTransactionsProps) {
                 <div className="flex items-center space-x-4">
                   <div
                     className={`p-2 rounded-lg ${
-                      transaction.type === "deposit"
-                        ? "bg-green-100"
+                      transaction.type === "deposit" || transaction.type === "dividend" || transaction.type === "loan-repayment" 
+                        ? "bg-green-100" 
                         : "bg-red-100"
                     }`}
                   >
-                    {transaction.type === "deposit" ? (
+                    {transaction.type === "deposit" || transaction.type === "dividend" || transaction.type === "loan-repayment" ? (
                       <ArrowUpRight
                         className="w-4 h-4 text-green-600"
                         strokeWidth={2.5}
@@ -151,19 +93,19 @@ export function RecentTransactions({ accountNumber }: RecentTransactionsProps) {
                   </div>
                   <div>
                     <p className="font-medium text-sacco-900">
-                      {transaction.type === "deposit" ? "Deposit" : "Withdrawal"}
+                      {transaction.description}
                     </p>
                     <p className="text-sm text-sacco-500">{transaction.date}, {transaction.time}</p>
                   </div>
                 </div>
                 <p
                   className={`font-medium ${
-                    transaction.type === "deposit"
+                    transaction.type === "deposit" || transaction.type === "dividend" || transaction.type === "loan-repayment"
                       ? "text-green-600"
                       : "text-red-600"
                   }`}
                 >
-                  {transaction.type === "deposit" ? "+" : "-"} {transaction.amount}
+                  {transaction.type === "deposit" || transaction.type === "dividend" || transaction.type === "loan-repayment" ? "+" : "-"} {transaction.amount}
                 </p>
               </div>
             ))
