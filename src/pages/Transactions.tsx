@@ -7,12 +7,17 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Copy, Send } from "lucide-react";
+import { Copy, Send, Upload, CreditCard } from "lucide-react";
 import { SendToMobileDialog } from "@/components/transactions/SendToMobileDialog";
+import { SendMoneyDialog } from "@/components/transactions/SendMoneyDialog";
+import { DepositMoneyDialog } from "@/components/transactions/DepositMoneyDialog";
 import { useTransactionStore, createTransaction } from "@/services/transactionService";
 
 export default function Transactions() {
   const [isSendToMobileOpen, setIsSendToMobileOpen] = useState(false);
+  const [isSendMoneyOpen, setIsSendMoneyOpen] = useState(false);
+  const [isDepositMoneyOpen, setIsDepositMoneyOpen] = useState(false);
+  
   // Transaction service
   const { addTransaction } = useTransactionStore();
 
@@ -42,6 +47,38 @@ export default function Transactions() {
     setIsSendToMobileOpen(false);
   };
 
+  // Handle send money transaction
+  const handleSendMoney = (recipientName: string, recipientAccount: string, amount: string, description?: string) => {
+    // Create and add the transaction to the store
+    const newTransaction = createTransaction(
+      accountNumber,
+      userName,
+      "withdrawal",
+      amount,
+      description || `Money sent to ${recipientName}`
+    );
+    
+    addTransaction(newTransaction);
+    toast.success(`KES ${amount} sent to ${recipientName} successfully`);
+    setIsSendMoneyOpen(false);
+  };
+
+  // Handle deposit money transaction
+  const handleDepositMoney = (amount: string, method: string) => {
+    // Create and add the transaction to the store
+    const newTransaction = createTransaction(
+      accountNumber,
+      userName,
+      "deposit",
+      amount,
+      `Deposit via ${method}`
+    );
+    
+    addTransaction(newTransaction);
+    toast.success(`KES ${amount} deposited successfully`);
+    setIsDepositMoneyOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
@@ -49,7 +86,15 @@ export default function Transactions() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <UserGreeting userName={userName.split(" ")[0]} />
-            <div className="flex gap-4 mt-4 md:mt-0">
+            <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+              <Button onClick={() => setIsDepositMoneyOpen(true)} className="gap-2" variant="secondary">
+                <Upload className="h-4 w-4" />
+                Deposit
+              </Button>
+              <Button onClick={() => setIsSendMoneyOpen(true)} className="gap-2">
+                <CreditCard className="h-4 w-4" />
+                Send Money
+              </Button>
               <Button onClick={() => setIsSendToMobileOpen(true)} className="gap-2">
                 <Send className="h-4 w-4" />
                 Send to Mobile
@@ -89,6 +134,18 @@ export default function Transactions() {
         isOpen={isSendToMobileOpen} 
         onClose={() => setIsSendToMobileOpen(false)}
         onSend={handleSendToMobile}
+      />
+      
+      <SendMoneyDialog
+        isOpen={isSendMoneyOpen}
+        onClose={() => setIsSendMoneyOpen(false)}
+        onSend={handleSendMoney}
+      />
+      
+      <DepositMoneyDialog
+        isOpen={isDepositMoneyOpen}
+        onClose={() => setIsDepositMoneyOpen(false)}
+        onDeposit={handleDepositMoney}
       />
     </div>
   );

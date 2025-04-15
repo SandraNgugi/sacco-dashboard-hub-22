@@ -44,9 +44,10 @@ type DepositFormValues = z.infer<typeof formSchema>;
 interface DepositMoneyDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onDeposit: (amount: string, method: string) => void;
 }
 
-export function DepositMoneyDialog({ isOpen, onClose }: DepositMoneyDialogProps) {
+export function DepositMoneyDialog({ isOpen, onClose, onDeposit }: DepositMoneyDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaystackButton, setShowPaystackButton] = useState(false);
 
@@ -74,14 +75,11 @@ export function DepositMoneyDialog({ isOpen, onClose }: DepositMoneyDialogProps)
         // Log the form values
         console.log("Deposit form values:", values);
         
-        // Show success toast
-        toast.success("Deposit successful", {
-          description: `KES ${values.amount} has been deposited to your account.`,
-        });
+        // Call the parent component's onDeposit handler
+        onDeposit(values.amount, values.paymentMethod);
         
         // Reset form and close dialog
         form.reset();
-        onClose();
       } catch (error) {
         toast.error("Failed to process deposit", {
           description: "Please try again later.",
@@ -95,11 +93,11 @@ export function DepositMoneyDialog({ isOpen, onClose }: DepositMoneyDialogProps)
   const handlePaystackSuccess = (reference: string) => {
     const values = form.getValues();
     console.log("Paystack payment successful:", reference);
-    toast.success("Payment successful", {
-      description: `KES ${values.amount} has been deposited to your account.`,
-    });
+    
+    // Call the parent component's onDeposit handler
+    onDeposit(values.amount, "Paystack");
+    
     form.reset();
-    onClose();
   };
 
   const handlePaystackClose = () => {

@@ -41,9 +41,10 @@ type SendMoneyFormValues = z.infer<typeof formSchema>;
 interface SendMoneyDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onSend: (recipient: string, accountNumber: string, amount: string, description?: string) => void;
 }
 
-export function SendMoneyDialog({ isOpen, onClose }: SendMoneyDialogProps) {
+export function SendMoneyDialog({ isOpen, onClose, onSend }: SendMoneyDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<SendMoneyFormValues>({
@@ -66,14 +67,16 @@ export function SendMoneyDialog({ isOpen, onClose }: SendMoneyDialogProps) {
       // Log the form values
       console.log("Send money form values:", values);
       
-      // Show success toast
-      toast.success("Money sent successfully", {
-        description: `KES ${values.amount} has been sent to ${values.recipient}.`,
-      });
+      // Call the parent component's onSend handler
+      onSend(
+        values.recipient,
+        values.accountNumber,
+        values.amount,
+        values.description
+      );
       
-      // Reset form and close dialog
+      // Reset form
       form.reset();
-      onClose();
     } catch (error) {
       toast.error("Failed to send money", {
         description: "Please try again later.",
