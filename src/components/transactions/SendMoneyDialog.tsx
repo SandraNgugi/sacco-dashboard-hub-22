@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Send, User } from "lucide-react";
+import { Send, User, Phone } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +21,8 @@ const formSchema = z.object({
   recipient: z.string().min(2, {
     message: "Recipient name must be at least 2 characters.",
   }),
-  accountNumber: z.string().min(5, {
-    message: "Account number must be at least 5 characters.",
+  phoneNumber: z.string().min(10, {
+    message: "Phone number must be at least 10 digits.",
   }),
   amount: z.string().refine(
     (val) => {
@@ -41,7 +41,7 @@ type SendMoneyFormValues = z.infer<typeof formSchema>;
 interface SendMoneyDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSend: (recipient: string, accountNumber: string, amount: string, description?: string) => void;
+  onSend: (recipient: string, phoneNumber: string, amount: string, description?: string) => void;
 }
 
 export function SendMoneyDialog({ isOpen, onClose, onSend }: SendMoneyDialogProps) {
@@ -51,7 +51,7 @@ export function SendMoneyDialog({ isOpen, onClose, onSend }: SendMoneyDialogProp
     resolver: zodResolver(formSchema),
     defaultValues: {
       recipient: "",
-      accountNumber: "",
+      phoneNumber: "",
       amount: "",
       description: "",
     },
@@ -70,7 +70,7 @@ export function SendMoneyDialog({ isOpen, onClose, onSend }: SendMoneyDialogProp
       // Call the parent component's onSend handler
       onSend(
         values.recipient,
-        values.accountNumber,
+        values.phoneNumber,
         values.amount,
         values.description
       );
@@ -95,7 +95,7 @@ export function SendMoneyDialog({ isOpen, onClose, onSend }: SendMoneyDialogProp
             Send Money
           </DialogTitle>
           <DialogDescription>
-            Send money to another member or external account.
+            Send money to another member or mobile number.
           </DialogDescription>
         </DialogHeader>
         
@@ -120,12 +120,15 @@ export function SendMoneyDialog({ isOpen, onClose, onSend }: SendMoneyDialogProp
             
             <FormField
               control={form.control}
-              name="accountNumber"
+              name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Account Number</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="SCO-12345" {...field} />
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-sacco-500" />
+                      <Input className="pl-10" placeholder="+254712345678" {...field} />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

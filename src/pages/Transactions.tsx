@@ -55,7 +55,7 @@ export default function Transactions() {
   };
 
   // Handle send money transaction
-  const handleSendMoney = (recipientName: string, recipientAccount: string, amount: string, description?: string) => {
+  const handleSendMoney = (recipientName: string, phoneNumber: string, amount: string, description?: string) => {
     // Create and add the transaction to the store
     const newTransaction = createTransaction(
       accountNumber,

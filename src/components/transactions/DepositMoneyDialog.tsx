@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Upload, CreditCard, Calendar } from "lucide-react";
+import { Upload, Calendar } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { PaystackButton } from "../payments/PaystackIntegration";
 
 const formSchema = z.object({
   amount: z.string().refine(
@@ -29,14 +28,10 @@ const formSchema = z.object({
       message: "Amount must be a positive number.",
     }
   ),
-  paymentMethod: z.string().min(1, {
-    message: "Payment method is required.",
-  }),
-  reference: z.string().optional(),
-  date: z.string().optional(),
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
+  date: z.string().optional(),
 });
 
 type DepositFormValues = z.infer<typeof formSchema>;
@@ -49,62 +44,38 @@ interface DepositMoneyDialogProps {
 
 export function DepositMoneyDialog({ isOpen, onClose, onDeposit }: DepositMoneyDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPaystackButton, setShowPaystackButton] = useState(false);
 
   const form = useForm<DepositFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: "",
-      paymentMethod: "Paystack",
-      reference: "",
       date: new Date().toISOString().slice(0, 10), // Today's date in YYYY-MM-DD format
       email: "",
     },
   });
 
   const onSubmit = async (values: DepositFormValues) => {
-    if (values.paymentMethod === "Paystack") {
-      setShowPaystackButton(true);
-    } else {
-      setIsSubmitting(true);
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call with timeout
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      try {
-        // Simulate API call with timeout
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        
-        // Log the form values
-        console.log("Deposit form values:", values);
-        
-        // Call the parent component's onDeposit handler
-        onDeposit(values.amount, values.paymentMethod);
-        
-        // Reset form and close dialog
-        form.reset();
-      } catch (error) {
-        toast.error("Failed to process deposit", {
-          description: "Please try again later.",
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
+      // Log the form values
+      console.log("Deposit form values:", values);
+      
+      // Call the parent component's onDeposit handler
+      onDeposit(values.amount, "Direct Deposit");
+      
+      // Reset form and close dialog
+      form.reset();
+    } catch (error) {
+      toast.error("Failed to process deposit", {
+        description: "Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-  };
-
-  const handlePaystackSuccess = (reference: string) => {
-    const values = form.getValues();
-    console.log("Paystack payment successful:", reference);
-    
-    // Call the parent component's onDeposit handler
-    onDeposit(values.amount, "Paystack");
-    
-    form.reset();
-  };
-
-  const handlePaystackClose = () => {
-    setShowPaystackButton(false);
-    toast.info("Payment canceled", {
-      description: "You can try again or choose a different payment method.",
-    });
   };
 
   return (
@@ -155,23 +126,6 @@ export function DepositMoneyDialog({ isOpen, onClose, onDeposit }: DepositMoneyD
             
             <FormField
               control={form.control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Payment Method</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-3 h-4 w-4 text-sacco-500" />
-                      <Input className="pl-10" placeholder="Paystack, M-Pesa, Bank Transfer" value={field.value} onChange={field.onChange} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
               name="date"
               render={({ field }) => (
                 <FormItem>
@@ -188,38 +142,12 @@ export function DepositMoneyDialog({ isOpen, onClose, onDeposit }: DepositMoneyD
             />
             
             <div className="flex justify-end gap-2 pt-4">
-              {showPaystackButton ? (
-                <>
-                  <Button variant="outline" type="button" onClick={() => setShowPaystackButton(false)}>
-                    Back
-                  </Button>
-                  <PaystackButton
-                    email={form.getValues().email}
-                    amount={Number(form.getValues().amount)}
-                    onSuccess={handlePaystackSuccess}
-                    onClose={handlePaystackClose}
-                    text="Pay Now"
-                    metadata={{
-                      custom_fields: [
-                        {
-                          display_name: "Payment Type",
-                          variable_name: "payment_type",
-                          value: "Deposit"
-                        }
-                      ]
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" type="button" onClick={onClose}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Processing..." : "Continue"}
-                  </Button>
-                </>
-              )}
+              <Button variant="outline" type="button" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Processing..." : "Submit"}
+              </Button>
             </div>
           </form>
         </Form>
